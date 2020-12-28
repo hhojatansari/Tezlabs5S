@@ -3,7 +3,7 @@ import os
 import sys
 import json
 import shutil
-from logger import Logger
+from utils.logger import Logger
 
 
 ext_dict = {
@@ -45,10 +45,15 @@ class Ui_MainWindow(object):
         self.load_db()
 
     def setup_ui(self, MainWindow):
-        MainWindow.setObjectName("Tezlabs 5S")
-        MainWindow.setWindowIcon(QtGui.QIcon('icon.ico'))
+        if not os.path.exists('database'):
+            os.makedirs('database')
+        if not os.path.exists('Log'):
+            os.makedirs('Log')
 
-        MainWindow.resize(927, 499)
+        MainWindow.setObjectName("Tezlabs 5S")
+        MainWindow.setWindowIcon(QtGui.QIcon('imgs/icon.ico'))
+        MainWindow.setFixedSize(927, 499)
+
         self.centralwidget.setObjectName("centralwidget")
 
         self.btn_exit.setGeometry(QtCore.QRect(760, 390, 131, 51))
@@ -74,7 +79,7 @@ class Ui_MainWindow(object):
         self.btn_add.setStyleSheet("background-color: rgb(255, 255, 255)")
         self.btn_add.setText("")
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("p.jpg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("imgs/add.jpg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.btn_add.setIcon(icon)
         self.btn_add.setIconSize(QtCore.QSize(35, 40))
         self.btn_add.setFlat(False)
@@ -90,7 +95,7 @@ class Ui_MainWindow(object):
         self.btn_remove.setStyleSheet("background-color: rgb(255, 255, 255)")
         self.btn_remove.setText("")
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("./n.jpg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addPixmap(QtGui.QPixmap("imgs/remove.jpg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.btn_remove.setIcon(icon1)
         self.btn_remove.setIconSize(QtCore.QSize(35, 40))
         self.btn_remove.setFlat(False)
@@ -109,7 +114,7 @@ class Ui_MainWindow(object):
 
         self.logo.setGeometry(QtCore.QRect(60, 40, 516, 186))
         self.logo.setText("")
-        self.logo.setPixmap(QtGui.QPixmap("logo.png"))
+        self.logo.setPixmap(QtGui.QPixmap("imgs/logo.png"))
         self.logo.setScaledContents(True)
         self.logo.setObjectName("logo")
 
@@ -142,7 +147,6 @@ class Ui_MainWindow(object):
         self.menubar.setObjectName("menubar")
         self.menuHelp.setObjectName("menuHelp")
         self.statusbar.setObjectName("statusbar")
-        self.statusbar.setStyleSheet("QStatusBar{color:red;font-weight:bold;}")
         MainWindow.setMenuBar(self.menubar)
         MainWindow.setStatusBar(self.statusbar)
         MainWindow.setCentralWidget(self.centralwidget)
@@ -160,7 +164,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Tezlabs 5S 1.0.5"))
         self.btn_exit.setText(_translate("MainWindow", "Exit"))
         __sortingEnabled = self.lw_items.isSortingEnabled()
         self.lw_items.setSortingEnabled(True)
@@ -193,8 +197,8 @@ class Ui_MainWindow(object):
     def about_dialog(self):
         self.msg.setWindowTitle('About')
         self.msg.setIcon(QtWidgets.QMessageBox.Information)
-        text = """<p>This program is written by <strong>Hosein Hojat Ansari</strong>, from Tabiat Zendeh Laboratories IT
-         department.</p> <p>You can access the source code of the program from 
+        text = """<p>This program is written by <strong>Hosein Hojat Ansari</strong>, from Tabiat Zendeh Laboratories, IT
+         department.</p> <p>You can get source code  from 
          <a href="https://github.com/hhojatansari/Tezlabs5S">here</a>.</p>"""
         self.msg.setText(text)
         self.msg.exec_()
@@ -206,14 +210,20 @@ class Ui_MainWindow(object):
                 (self.te_ext.toPlainText() or self.cb_ext.currentText()):
             if self.cb_ext.currentText() == 'Others':
                 if self.te_ext.toPlainText():
-                    name = self.te_item_name.toPlainText() + ', Others-' + self.te_ext.toPlainText()
+                    name = self.te_item_name.toPlainText() + ', Others-' + '.' + ''.join(filter(str.isalpha, self.te_ext.toPlainText()))
                     ext = self.te_ext.toPlainText()
                 else:
+                    self.statusbar.setStyleSheet("QStatusBar{color:red;}")
                     self.statusbar.showMessage('Fill fields.', msecs=5000)
                     return
             else:
                 name = self.te_item_name.toPlainText() + ', ' + self.cb_ext.currentText()
                 ext = self.cb_ext.currentText()
+
+            if name in self.items_dict.keys():
+                self.statusbar.setStyleSheet("QStatusBar{color:red;}")
+                self.statusbar.showMessage('Item name already exists.', msecs=5000)
+                return
 
             self.items_dict[name] = {
                 'From': self.te_from.toPlainText(),
@@ -225,6 +235,7 @@ class Ui_MainWindow(object):
             self.lw_items.addItem(name)
             self.clear_info()
         else:
+            self.statusbar.setStyleSheet("QStatusBar{color:red;}")
             self.statusbar.showMessage('Fill fields.', msecs=5000)
 
     def remove_item(self):
@@ -270,20 +281,22 @@ class Ui_MainWindow(object):
 
     def load_db(self):
         try:
-            if os.path.isfile('Tezlabs5S.json'):
-                with open('Tezlabs5S.json') as db:
+            if os.path.isfile('database/Tezlabs5S.json'):
+                with open('database/Tezlabs5S.json') as db:
                     self.items_dict = json.load(db)
                     for i in self.items_dict:
                         self.lw_items.addItem(i)
                 self.statusbar.clearMessage()
             else:
+                self.statusbar.setStyleSheet("QStatusBar{color:red;}")
                 self.statusbar.showMessage("Not found database file", msecs=5000)
         except:
+            self.statusbar.setStyleSheet("QStatusBar{color:red;}")
             self.statusbar.showMessage(
                 "May your 'Tezlabss.json' file damaged or corrupted.. Fix it if you know JSON, or delete PLZ :(")
 
     def write_db(self):
-        with open('Tezlabs5S.json', 'w') as outfile:
+        with open('database/Tezlabs5S.json', 'w') as outfile:
             json.dump(self.items_dict, outfile, sort_keys=True, indent=4)
 
     def apply(self):
@@ -315,10 +328,14 @@ class Ui_MainWindow(object):
                                     self.items_dict[item]['To'].strip() + os.altsep + file
                                 )
             if falg:
+                self.statusbar.setStyleSheet("QStatusBar{color:green;}")
                 self.statusbar.showMessage('Files moved prefectly. check logs..', msecs=5000)
+                self.log.write_to_log("~END||\n")
             else:
-                self.statusbar.showMessage('Everything is ok :D', msecs=5000)
+                self.statusbar.setStyleSheet("QStatusBar{color:green;}")
+                self.statusbar.showMessage('Everything is ok :)', msecs=5000)
         except:
+            self.statusbar.setStyleSheet("QStatusBar{color:red;}")
             self.statusbar.showMessage('Somethings is wrong.. contact with us, PLZ.')
 
 

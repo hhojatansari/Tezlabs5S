@@ -7,12 +7,9 @@ class Logger:
         self.now_file = None
 
     def get_date(self):
-        self.now_file = datetime.datetime.now().strftime("Log_%Y-%m-%d_%H-%M.txt")
+        self.now_file = datetime.datetime.now().strftime("Log_%Y-%m-%d.txt")
 
     def write_to_log(self, text, new_line=True):
-        if not os.path.exists('Log'):
-            os.makedirs('Log')
-
         self.get_date()
         with open('Log' + os.altsep + self.now_file, 'a+') as file:
             if new_line:
