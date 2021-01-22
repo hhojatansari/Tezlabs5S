@@ -163,6 +163,8 @@ class MainWindow(object):
         self.lw_items.setStyleSheet('')
         self.clear_item_info()
         self.item_dialog.setWindowTitle('Add new Item')
+        self.item_ui.clear_elemnts()
+        self.item_ui.le_name.setReadOnly(False)
         self.item_ui.read_ext_db()
         self.item_ui.read_item_db()
         self.item_dialog.show()
@@ -176,6 +178,7 @@ class MainWindow(object):
             self.lw_items.setStyleSheet('')
         self.clear_item_info()
         self.item_dialog.setWindowTitle('Edit Item')
+        self.item_ui.le_name.setReadOnly(True)
         self.item_ui.read_item_db()
         self.item_ui.read_ext_db()
         self.item_ui.load_item(self.lw_items.currentItem().text())
@@ -329,9 +332,11 @@ class MainWindow(object):
     def about_dialog(self):
         self.msg.setWindowTitle('About')
         self.msg.setIcon(QtWidgets.QMessageBox.Information)
-        text = """<p>This program is written by <strong>Hosein Hojat Ansari</strong>, from Tabiat Zendeh Laboratories, IT
-         department.</p> <p>You can get source code  from
-         <a href="https://github.com/hhojatansari/Tezlabs5S">here</a>.</p>"""
+        text = """<p>This program is written by <strong>Hosein Hojat Ansari</strong>, from <span style="color: #008000;">Tabiat Zendeh Laboratories</span>, IT
+         department.</p>
+         A big thanks to <strong>Mahsa Sanaei</strong> for the helpful advices. 
+         <p>Check out the source code from
+         <a href="https://github.com/hhojatansari/Tezlabs5S">GitHub</a>.</p>"""
         self.msg.setText(text)
         self.msg.exec_()
 

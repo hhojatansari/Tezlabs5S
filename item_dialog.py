@@ -171,7 +171,7 @@ class Item(object):
     def brows_from(self):
         self.le_from.setText(
             self.dialog_browser.getExistingDirectory(directory=os.path.join(os.environ['USERPROFILE'], 'Desktop'),
-                                                     caption='Select an awesome directory')
+                                                     caption='Select messy directory')
         )
 
     def brows_to(self):
@@ -182,6 +182,7 @@ class Item(object):
 
     def open_gp_ext(self, event):
         self.ext_ui.clear_style()
+        self.ext_ui.clear_item()
         self.ext_ui.read_ext_db()
         self.ext_dialog.show()
 
